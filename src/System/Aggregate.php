@@ -325,7 +325,8 @@ class Aggregate implements InternallyMappable
      */
     public function getEntityId()
     {
-        return $this->wrappedEntity->getEntityAttribute($this->entityMap->getKeyName());
+        $keyName = $this->entityMap->getAttributeNameForColumn($this->entityMap->getKeyName());
+        return $this->wrappedEntity->getEntityAttribute($keyName);
     }
 
     /**

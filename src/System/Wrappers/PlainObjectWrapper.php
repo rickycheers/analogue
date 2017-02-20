@@ -111,7 +111,7 @@ class PlainObjectWrapper extends Wrapper
         foreach ($properties as $property) {
             $name = $property->getName();
 
-            if ($property->isPublic()) {
+            if ($property->isPublic() && isset($attributes[$name])) {
                 $this->entity->$name = $attributes[$name];
             } else {
                 $property->setAccessible(true);
@@ -160,7 +160,7 @@ class PlainObjectWrapper extends Wrapper
         $property = $this->getMappedProperty($key);
 
         if ($property->isPublic()) {
-            $this->entity->$key = $value;
+            $this->entity->{$property->getName()} = $value;
         } else {
             $property->setAccessible(true);
     
