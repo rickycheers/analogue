@@ -7,21 +7,30 @@ use ReflectionClass;
 class PlainObjectWrapper extends Wrapper
 {
     /**
-     * The list of attributes for the managed entity
+     * The list of attributes for the managed entity.
      *
      * @var array
      */
     protected $attributeList;
 
     /**
-     * The reflection class for the managed entity
+     * The reflection class for the managed entity.
      *
      * @var ReflectionClass
      */
     protected $reflection;
 
     /**
+     * Attributes which have no existence on the actual entity
+     * but which exists in DB (eg : foreign key).
+     *
+     * @var array
+     */
+    protected $virtualAttributes = [];
+
+    /**
      * PlainObjectWrapper constructor.
+     *
      * @param $popoEntity
      * @param $entityMap
      */
@@ -35,7 +44,7 @@ class PlainObjectWrapper extends Wrapper
     }
 
     /**
-     * Get Compiled Attributes (key, attributes, embed, relations)
+     * Get Compiled Attributes (key, attributes, embed, relations).
      *
      * @return array
      */
@@ -45,7 +54,7 @@ class PlainObjectWrapper extends Wrapper
     }
 
     /**
-     * Extract Attributes from a Plain Php Object
+     * Extract Attributes from a Plain Php Object.
      *
      * @return array $attributes
      */
@@ -62,7 +71,7 @@ class PlainObjectWrapper extends Wrapper
                 $attributes[$name] = $this->entity->$name;
             } else {
                 $property->setAccessible(true);
-    
+
                 $attributes[$name] = $property->getValue($this->entity);
             }
         }
@@ -89,8 +98,11 @@ class PlainObjectWrapper extends Wrapper
     }
 
     /**
-     * @param  string $name
-     * @return \ReflectionProperty
+     * Get the property's value from reflection.
+     *
+     * @param string $name
+     *
+     * @return \ReflectionProperty | null
      */
     protected function getMappedProperty($name)
     {
@@ -99,9 +111,10 @@ class PlainObjectWrapper extends Wrapper
     }
 
     /**
-     * Hydrate Plain PHP Object with wrapped attributes
+     * Hydrate Plain PHP Object with wrapped attributes.
      *
      * @param  $attributes
+     *
      * @return void
      */
     protected function hydrate($attributes)
@@ -124,7 +137,7 @@ class PlainObjectWrapper extends Wrapper
 
     /**
      * Method used by the mapper to set the object
-     * attribute raw values (hydration)
+     * attribute raw values (hydration).
      *
      * @param array $attributes
      *
@@ -143,12 +156,14 @@ class PlainObjectWrapper extends Wrapper
      */
     public function getEntityAttributes()
     {
-        return $this->extract();
+        $properties = $this->extract();
+
+        return array_merge($properties, $this->virtualAttributes);
     }
 
     /**
      * Method used by the mapper to set raw
-     * key-value pair
+     * key-value pair.
      *
      * @param string $key
      * @param string $value
@@ -157,13 +172,19 @@ class PlainObjectWrapper extends Wrapper
      */
     public function setEntityAttribute($key, $value)
     {
+        if (!$this->reflection->hasProperty($key)) {
+            $this->virtualAttributes[$key] = $value;
+
+            return;
+        }
+
         $property = $this->getMappedProperty($key);
 
         if ($property->isPublic()) {
             $this->entity->{$property->getName()} = $value;
         } else {
             $property->setAccessible(true);
-    
+
             $property->setValue($this->entity, $value);
         }
 
@@ -172,13 +193,18 @@ class PlainObjectWrapper extends Wrapper
 
     /**
      * Method used by the mapper to get single
-     * key-value pair
+     * key-value pair.
      *
-     * @param  string $key
-     * @return mixed
+     * @param string $key
+     *
+     * @return mixed|null
      */
     public function getEntityAttribute($key)
     {
+        if (!$this->reflection->hasProperty($key)) {
+            return $this->getVirtualAttribute($key);
+        }
+
         $property = $this->getMappedProperty($key);
 
         if ($property->isPublic()) {
@@ -191,15 +217,32 @@ class PlainObjectWrapper extends Wrapper
         return $value;
     }
 
-        /**
-         * Test if a given attribute exists
-         *
-         * @param  string  $key
-         * @return boolean
-         */
+    /**
+     * Return a virtual attributes.
+     *
+     * @param string $key
+     *
+     * @return mixed
+     */
+    protected function getVirtualAttribute($key)
+    {
+        if (array_key_exists($key, $this->virtualAttributes)) {
+            return $this->virtualAttributes[$key];
+        } else {
+            return;
+        }
+    }
+
+    /**
+     * Test if a given attribute exists.
+     *
+     * @param string $key
+     *
+     * @return bool
+     */
     public function hasAttribute($key)
     {
-        if (array_key_exists($key, $this->attributeList)) {
+        if (in_array($key, $this->attributeList)) {
             return true;
         } else {
             return false;

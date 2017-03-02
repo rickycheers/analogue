@@ -2,34 +2,34 @@
 
 namespace Analogue\ORM\System;
 
+use Analogue\ORM\Drivers\Manager as DriverManager;
 use Analogue\ORM\Entity;
+use Analogue\ORM\EntityMap;
+use Analogue\ORM\Exceptions\EntityMapNotFoundException;
+use Analogue\ORM\Exceptions\MappingException;
 use Analogue\ORM\Plugins\AnaloguePluginInterface;
+use Analogue\ORM\Repository;
+use Analogue\ORM\System\Wrappers\Wrapper;
 use Analogue\ORM\ValueMap;
 use Exception;
-use Analogue\ORM\EntityMap;
-use Analogue\ORM\Repository;
-use Illuminate\Support\Collection;
-use Analogue\ORM\System\Wrappers\Wrapper;
 use Illuminate\Contracts\Events\Dispatcher;
-use Analogue\ORM\Exceptions\MappingException;
-use Analogue\ORM\Drivers\Manager as DriverManager;
-use Analogue\ORM\Exceptions\EntityMapNotFoundException;
+use Illuminate\Support\Collection;
 
 /**
  * This class is the entry point for registering Entities and
- * instansiating Mappers
+ * instansiating Mappers.
  */
 class Manager
 {
     /**
-     * Manager instance
+     * Manager instance.
      *
      * @var Manager
      */
     protected static $instance;
 
     /**
-     * Driver Manager
+     * Driver Manager.
      *
      * @var \Analogue\ORM\Drivers\Manager
      */
@@ -43,40 +43,40 @@ class Manager
     protected $entityClasses = [];
 
     /**
-     * Key value store of ValueObject Classes and corresponding map classes
+     * Key value store of ValueObject Classes and corresponding map classes.
      *
      * @var array|ValueMap[]
      */
     protected $valueClasses = [];
 
     /**
-     * Morph map
+     * Morph map.
      */
     protected $morphMap = [];
 
     /**
-     * Loaded Mappers
+     * Loaded Mappers.
      *
      * @var array
      */
     protected $mappers = [];
 
     /**
-     * Loaded Repositories
+     * Loaded Repositories.
      *
      * @var array
      */
     protected $repositories = [];
 
     /**
-     * Event dispatcher instance
+     * Event dispatcher instance.
      *
      * @var \Illuminate\Contracts\Events\Dispatcher
      */
     protected $eventDispatcher;
 
     /**
-     * Available Analogue Events
+     * Available Analogue Events.
      *
      * @var array
      */
@@ -97,10 +97,18 @@ class Manager
      * If strictMode is set to true, Manager will throw
      * an exception if no entityMap class are registered
      * for a given entity class.
-     * 
-     * @var boolean
+     *
+     * @var bool
      */
     protected $strictMode = true;
+
+    /**
+     * We can add namespaces in this array where the manager
+     * will look for when auto registering entityMaps.
+     *
+     * @var array
+     */
+    protected $customMapNamespaces = [];
 
     /**
      * @param \Analogue\ORM\Drivers\Manager $driverManager
@@ -116,13 +124,15 @@ class Manager
     }
 
     /**
-     * Create a mapper for a given entity (static alias)
+     * Create a mapper for a given entity (static alias).
      *
-     * @param  \Analogue\ORM\Mappable|string $entity
-     * @param  null|EntityMap                $entityMap
+     * @param \Analogue\ORM\Mappable|string $entity
+     * @param null|EntityMap                $entityMap
+     *
      * @throws MappingException
-     * @return Mapper
      * @throws \InvalidArgumentException
+     *
+     * @return Mapper
      */
     public static function getMapper($entity, $entityMap = null)
     {
@@ -130,12 +140,14 @@ class Manager
     }
 
     /**
-     * Create a mapper for a given entity
+     * Create a mapper for a given entity.
      *
-     * @param  \Analogue\ORM\Mappable|string|array|\Traversable $entity
-     * @param  mixed                                            $entityMap
+     * @param \Analogue\ORM\Mappable|string|array|\Traversable $entity
+     * @param mixed                                            $entityMap
+     *
      * @throws MappingException
      * @throws \InvalidArgumentException
+     *
      * @return Mapper
      */
     public function mapper($entity, $entityMap = null)
@@ -157,19 +169,20 @@ class Manager
     }
 
     /**
-     * This method resolve entity class from mappable instances or iterators
+     * This method resolve entity class from mappable instances or iterators.
      *
      * @param \Analogue\ORM\Mappable|string|array|\Traversable $entity
-     * @return string
      *
      * @throws \InvalidArgumentException
+     *
+     * @return string
      */
     protected function resolveEntityClass($entity)
     {
         // We first check if the entity is traversable and we'll resolve
-        // the entity based on the first item of the object.   
+        // the entity based on the first item of the object.
         if ($this->isTraversable($entity)) {
-            if (! count($entity)) {
+            if (!count($entity)) {
                 throw new \InvalidArgumentException('Length of Entity collection must be greater than 0');
             }
 
@@ -179,7 +192,7 @@ class Manager
 
             return $this->resolveEntityClass($firstEntityItem);
         }
-            
+
         if (is_object($entity)) {
             return get_class($entity);
         }
@@ -187,12 +200,13 @@ class Manager
         if (is_string($entity)) {
             return $entity;
         }
-     
+
         throw new \InvalidArgumentException('Invalid entity type');
     }
 
     /**
      * @param string $key
+     *
      * @return string
      */
     public function getInverseMorphMap($key)
@@ -201,11 +215,13 @@ class Manager
     }
 
     /**
-     * Build a new Mapper instance for a given Entity
+     * Build a new Mapper instance for a given Entity.
      *
-     * @param  string $entity
-     * @param         $entityMap
+     * @param string $entity
+     * @param        $entityMap
+     *
      * @throws MappingException
+     *
      * @return Mapper
      */
     protected function buildMapper($entity, $entityMap)
@@ -233,10 +249,11 @@ class Manager
     }
 
     /**
-     * Check if the entity is already registered
+     * Check if the entity is already registered.
      *
-     * @param  string|Entity $entity
-     * @return boolean
+     * @param string|Entity $entity
+     *
+     * @return bool
      */
     public function isRegisteredEntity($entity)
     {
@@ -248,10 +265,37 @@ class Manager
     }
 
     /**
-     * Return true if an object is an array or iterator
+     * Return an array containing registered entities & entityMap instances.
      *
-     * @param  mixed $argument
-     * @return boolean
+     * @return array
+     */
+    public function getRegisteredEntities()
+    {
+        return $this->entityClasses;
+    }
+
+    /**
+     * Check if a value class is already registered.
+     *
+     * @param string|sdtClass $object
+     *
+     * @return bool
+     */
+    public function isRegisteredValueObject($object)
+    {
+        if (!is_string($object)) {
+            $object = get_class($object);
+        }
+
+        return array_key_exists($object, $this->valueClasses);
+    }
+
+    /**
+     * Return true if an object is an array or iterator.
+     *
+     * @param mixed $argument
+     *
+     * @return bool
      */
     public function isTraversable($argument)
     {
@@ -259,9 +303,9 @@ class Manager
     }
 
     /**
-     * Set strict mode for entityMap instantiation
-     * 
-     * @param boolean $mode
+     * Set strict mode for entityMap instantiation.
+     *
+     * @param bool $mode
      */
     public function setStrictMode($mode)
     {
@@ -269,11 +313,31 @@ class Manager
     }
 
     /**
-     * Register an entity
+     * Register a namespace in where Analogue
+     * will scan for EntityMaps & ValueMaps.
      *
-     * @param  string|\Analogue\ORM\Mappable $entity    entity's class name
-     * @param  string|EntityMap              $entityMap map's class name
+     * @param string $namespace
+     *
+     * @return void
+     */
+    public function registerMapNamespace($namespace)
+    {
+        // Add a trailing antislash to namespace if not present
+        if (substr('testers', -1) != '\\') {
+            $namespace = $namespace.'\\';
+        }
+
+        $this->customMapNamespaces[] = $namespace;
+    }
+
+    /**
+     * Register an entity.
+     *
+     * @param string|\Analogue\ORM\Mappable $entity    entity's class name
+     * @param string|EntityMap              $entityMap map's class name
+     *
      * @throws MappingException
+     *
      * @return void
      */
     public function register($entity, $entityMap = null)
@@ -296,54 +360,101 @@ class Manager
         }
 
         if (is_string($entityMap)) {
-            $entityMap = new $entityMap;
+            $entityMap = new $entityMap();
         }
 
         if (!$entityMap instanceof EntityMap) {
-            throw new MappingException(get_class($entityMap) . ' must be an instance of EntityMap.');
+            throw new MappingException(get_class($entityMap).' must be an instance of EntityMap.');
         }
 
         $entityMap->setClass($entity);
-
-        $entityMap->setManager($this);
 
         $this->entityClasses[$entity] = $entityMap;
     }
 
     /**
-     * Get the entity map instance for a custom entity
+     * Get the entity map instance for a custom entity.
      *
-     * @param  string $entity
-     * @return \Analogue\ORM\Mappable
-     * @throws EntityMapNotFoundException
+     * @param string $entity
+     *
+     * @return \Analogue\ORM\EntityMap
      */
     protected function getEntityMapInstanceFor($entity)
     {
-        if (class_exists($entity . 'Map')) {
-            $map = $entity . 'Map';
-            $map = new $map;
-        } else {
-            if ($this->strictMode) {
-                throw new EntityMapNotFoundException("No EntityMap registered for $entity");
-            }
-            $map = $this->getNewEntityMap();
+        if (class_exists($entity.'Map')) {
+            $map = $entity.'Map';
+            $map = new $map();
+
+            return $map;
         }
+
+        if ($map = $this->getMapFromNamespaces($entity)) {
+            return $map;
+        }
+
+        if ($this->strictMode) {
+            throw new EntityMapNotFoundException("No Map registered for $entity");
+        }
+
+        $map = $this->getNewEntityMap();
 
         return $map;
     }
 
     /**
-     * Dynamically create an entity map for a custom entity class
+     * Scan through registered custom namespace
+     * for an Entity/ValueMap.
+     *
+     * @param string $class
+     *
+     * @return ValueMap|EntityMap|bool
+     */
+    protected function getMapFromNamespaces($class)
+    {
+        foreach ($this->customMapNamespaces as $namespace) {
+            if ($map = $this->findMapInNamespace($class, $namespace)) {
+                return $map;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Look in a custom namespace for an Entity/ValueMap.
+     *
+     * @param string $class
+     * @param string $namespace
+     *
+     * @return ValueMap|EntityMap|bool
+     */
+    protected function findMapInNamespace($class, $namespace)
+    {
+        $parts = explode('\\', $class);
+
+        $baseClass = $parts[count($parts) - 1];
+
+        $expectedClass = $namespace.$baseClass.'Map';
+
+        if (class_exists($expectedClass)) {
+            return new $expectedClass();
+        }
+
+        return false;
+    }
+
+    /**
+     * Dynamically create an entity map for a custom entity class.
      *
      * @return EntityMap
      */
     protected function getNewEntityMap()
     {
-        return new EntityMap;
+        return new EntityMap();
     }
 
     /**
-     * Return the Singleton instance of the manager
+     * Return the Singleton instance of the manager.
      *
      * @return Manager
      */
@@ -353,7 +464,7 @@ class Manager
     }
 
     /**
-     * Return the Driver Manager's instance
+     * Return the Driver Manager's instance.
      *
      * @return \Analogue\ORM\Drivers\Manager
      */
@@ -363,11 +474,13 @@ class Manager
     }
 
     /**
-     * Get the Repository instance for the given Entity
+     * Get the Repository instance for the given Entity.
      *
-     * @param  \Analogue\ORM\Mappable|string $entity
+     * @param \Analogue\ORM\Mappable|string $entity
+     *
      * @throws \InvalidArgumentException
      * @throws MappingException
+     *
      * @return \Analogue\ORM\Repository
      */
     public function repository($entity)
@@ -387,10 +500,11 @@ class Manager
     }
 
     /**
-     * Return true is the object is registered as value object
+     * Return true is the object is registered as value object.
      *
-     * @param  mixed $object
-     * @return boolean
+     * @param mixed $object
+     *
+     * @return bool
      */
     public function isValueObject($object)
     {
@@ -402,10 +516,12 @@ class Manager
     }
 
     /**
-     * Get the Value Map for a given Value Object Class
+     * Get the Value Map for a given Value Object Class.
      *
-     * @param  string $valueObject
+     * @param string $valueObject
+     *
      * @throws MappingException
+     *
      * @return \Analogue\ORM\ValueMap
      */
     public function getValueMap($valueObject)
@@ -419,7 +535,7 @@ class Manager
         }
 
         /** @var ValueMap $valueMap */
-        $valueMap = new $this->valueClasses[$valueObject];
+        $valueMap = new $this->valueClasses[$valueObject]();
 
         $valueMap->setClass($valueObject);
 
@@ -427,11 +543,13 @@ class Manager
     }
 
     /**
-     * Register a Value Object
+     * Register a Value Object.
      *
-     * @param  string $valueObject
-     * @param  string $valueMap
+     * @param string $valueObject
+     * @param string $valueMap
+     *
      * @throws MappingException
+     *
      * @return void
      */
     public function registerValueObject($valueObject, $valueMap = null)
@@ -441,7 +559,14 @@ class Manager
         }
 
         if ($valueMap === null) {
-            $valueMap = $valueObject . 'Map';
+
+            // First, we'll look into registered namespaces for Entity Maps,
+            // if any. Then we'll fallback to the same namespace of the object
+            if (!$valueMap = $this->getMapFromNamespaces($valueObject)) {
+                $valueMap = $valueObject.'Map';
+            } else {
+                $valueMap = get_class($valueMap);
+            }
         }
 
         if (!class_exists($valueMap)) {
@@ -452,9 +577,10 @@ class Manager
     }
 
     /**
-     * Instantiate a new Value Object instance
+     * Instantiate a new Value Object instance.
      *
-     * @param  string $valueObject
+     * @param string $valueObject
+     *
      * @return \Analogue\ORM\ValueObject
      */
     public function getValueObjectInstance($valueObject)
@@ -465,9 +591,10 @@ class Manager
     }
 
     /**
-     * Register Analogue Plugin
+     * Register Analogue Plugin.
      *
-     * @param  string $plugin class
+     * @param string $plugin class
+     *
      * @return void
      */
     public function registerPlugin($plugin)
@@ -484,9 +611,11 @@ class Manager
      * Register event listeners that will be fired regardless the type
      * of the entity.
      *
-     * @param  string   $event
-     * @param  \Closure $callback
+     * @param string   $event
+     * @param \Closure $callback
+     *
      * @throws \LogicException
+     *
      * @return void
      */
     public function registerGlobalEvent($event, $callback)
@@ -499,12 +628,14 @@ class Manager
     }
 
     /**
-     * Shortcut to Mapper store
+     * Shortcut to Mapper store.
      *
-     * @param  mixed $entity
+     * @param mixed $entity
+     *
      * @throws MappingException
-     * @return mixed
      * @throws \InvalidArgumentException
+     *
+     * @return mixed
      */
     public function store($entity)
     {
@@ -512,12 +643,14 @@ class Manager
     }
 
     /**
-     * Shortcut to Mapper delete
+     * Shortcut to Mapper delete.
      *
-     * @param  mixed $entity
+     * @param mixed $entity
+     *
      * @throws MappingException
-     * @return \Illuminate\Support\Collection|null
      * @throws \InvalidArgumentException
+     *
+     * @return \Illuminate\Support\Collection|null
      */
     public function delete($entity)
     {
@@ -525,12 +658,14 @@ class Manager
     }
 
     /**
-     * Shortcut to Mapper query
+     * Shortcut to Mapper query.
      *
-     * @param  mixed $entity
+     * @param mixed $entity
+     *
      * @throws MappingException
-     * @return Query
      * @throws \InvalidArgumentException
+     *
+     * @return Query
      */
     public function query($entity)
     {
@@ -538,12 +673,14 @@ class Manager
     }
 
     /**
-     * Shortcut to Mapper Global Query
+     * Shortcut to Mapper Global Query.
      *
-     * @param  mixed $entity
+     * @param mixed $entity
+     *
      * @throws MappingException
-     * @return Query
      * @throws \InvalidArgumentException
+     *
+     * @return Query
      */
     public function globalQuery($entity)
     {
@@ -552,6 +689,7 @@ class Manager
 
     /**
      * @param array $morphMap
+     *
      * @return $this
      */
     public function morphMap(array $morphMap)
@@ -563,6 +701,7 @@ class Manager
 
     /**
      * @param string $class
+     *
      * @return mixed
      */
     public function getMorphMap($class)

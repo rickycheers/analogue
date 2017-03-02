@@ -2,8 +2,8 @@
 
 namespace Analogue\ORM\Relationships;
 
-use Analogue\ORM\System\Mapper;
 use Analogue\ORM\EntityCollection;
+use Analogue\ORM\System\Mapper;
 
 abstract class HasOneOrMany extends Relationship
 {
@@ -35,31 +35,6 @@ abstract class HasOneOrMany extends Relationship
         $this->foreignKey = $foreignKey;
 
         parent::__construct($mapper, $parentEntity);
-    }
-
-    /**
-     * @param \Analogue\ORM\Entity|EntityCollection $entity
-     * @return void
-     */
-    public function attachTo($entity)
-    {
-        if ($entity instanceof EntityCollection) {
-            $this->attachMany($entity);
-        }
-        $this->attachOne($entity);
-    }
-
-    /**
-     * @param $entityHash
-     * @return void
-     */
-    public function detachFrom($entityHash)
-    {
-        if (is_array($entityHash)) {
-            $this->detachMany($entityHash);
-            return;
-        }
-        $this->detachMany([$entityHash]);
     }
 
     /**
@@ -95,9 +70,12 @@ abstract class HasOneOrMany extends Relationship
     }
 
     /**
-     * Attach ids that are passed as arguments, and detach any other
-     * @param  mixed $entities
+     * Attach ids that are passed as arguments, and detach any other.
+     *
+     * @param mixed $entities
+     *
      * @throws \InvalidArgumentException
+     *
      * @return void
      */
     public function sync(array $entities)
@@ -107,6 +85,7 @@ abstract class HasOneOrMany extends Relationship
 
     /**
      * @param  $entities
+     *
      * @throws \InvalidArgumentException
      */
     protected function detachExcept($entities)
@@ -157,7 +136,8 @@ abstract class HasOneOrMany extends Relationship
     /**
      * Set the constraints for an eager load of the relation.
      *
-     * @param  array $entities
+     * @param array $entities
+     *
      * @return void
      */
     public function addEagerConstraints(array $entities)
@@ -168,9 +148,10 @@ abstract class HasOneOrMany extends Relationship
     /**
      * Match the eagerly loaded results to their single parents.
      *
-     * @param  array            $entities
-     * @param  EntityCollection $results
-     * @param  string           $relation
+     * @param array            $entities
+     * @param EntityCollection $results
+     * @param string           $relation
+     *
      * @return array
      */
     public function matchOne(array $entities, EntityCollection $results, $relation)
@@ -181,9 +162,10 @@ abstract class HasOneOrMany extends Relationship
     /**
      * Match the eagerly loaded results to their many parents.
      *
-     * @param  array            $entities
-     * @param  EntityCollection $results
-     * @param  string           $relation
+     * @param array            $entities
+     * @param EntityCollection $results
+     * @param string           $relation
+     *
      * @return array
      */
     public function matchMany(array $entities, EntityCollection $results, $relation)
@@ -194,10 +176,11 @@ abstract class HasOneOrMany extends Relationship
     /**
      * Match the eagerly loaded results to their many parents.
      *
-     * @param  array            $entities
-     * @param  EntityCollection $results
-     * @param  string           $relation
-     * @param  string           $type
+     * @param array            $entities
+     * @param EntityCollection $results
+     * @param string           $relation
+     * @param string           $type
+     *
      * @return array
      */
     protected function matchOneOrMany(array $entities, EntityCollection $results, $relation, $type)
@@ -229,9 +212,10 @@ abstract class HasOneOrMany extends Relationship
     /**
      * Get the value of a relationship by one or many type.
      *
-     * @param  array  $dictionary
-     * @param  string $key
-     * @param  string $type
+     * @param array  $dictionary
+     * @param string $key
+     * @param string $type
+     *
      * @return mixed
      */
     protected function getRelationValue(array $dictionary, $key, $type)
@@ -244,7 +228,8 @@ abstract class HasOneOrMany extends Relationship
     /**
      * Build model dictionary keyed by the relation's foreign key.
      *
-     * @param  EntityCollection $results
+     * @param EntityCollection $results
+     *
      * @return array
      */
     protected function buildDictionary(EntityCollection $results)
@@ -314,11 +299,11 @@ abstract class HasOneOrMany extends Relationship
      */
     public function getQualifiedParentKeyName()
     {
-        return $this->parentMap->getTable() . '.' . $this->localKey;
+        return $this->parentMap->getTable().'.'.$this->localKey;
     }
 
     /**
-     * Get the foreign key as value pair for this relation
+     * Get the foreign key as value pair for this relation.
      *
      * @return array
      */

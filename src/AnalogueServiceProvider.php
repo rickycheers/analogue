@@ -2,14 +2,14 @@
 
 namespace Analogue\ORM;
 
-use Illuminate\Support\ServiceProvider;
-use Analogue\ORM\System\Manager;
-use Analogue\ORM\Drivers\Manager as DriverManager;
-use Analogue\ORM\Drivers\IlluminateDriver;
 use Analogue\ORM\Drivers\IlluminateConnectionProvider;
+use Analogue\ORM\Drivers\IlluminateDriver;
+use Analogue\ORM\Drivers\Manager as DriverManager;
+use Analogue\ORM\System\Manager;
+use Illuminate\Support\ServiceProvider;
 
 /**
- * Integrate Analogue into Laravel
+ * Integrate Analogue into Laravel.
  */
 class AnalogueServiceProvider extends ServiceProvider
 {
@@ -22,10 +22,7 @@ class AnalogueServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        $manager = $this->app->make('analogue');
-
-        $manager->registerPlugin('Analogue\ORM\Plugins\Timestamps\TimestampsPlugin');
-        $manager->registerPlugin('Analogue\ORM\Plugins\SoftDeletes\SoftDeletesPlugin');
+        //
     }
 
     /**
@@ -36,23 +33,31 @@ class AnalogueServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton('analogue', function ($app) {
-
             $db = $app['db'];
 
             $connectionProvider = new IlluminateConnectionProvider($db);
 
             $illuminate = new IlluminateDriver($connectionProvider);
 
-            $driverManager = new DriverManager;
+            $driverManager = new DriverManager();
 
             $driverManager->addDriver($illuminate);
 
             $event = $app->make('events');
 
-            return new Manager($driverManager, $event);
+            $manager = new Manager($driverManager, $event);
+
+            $manager->registerPlugin(\Analogue\ORM\Plugins\Timestamps\TimestampsPlugin::class);
+            $manager->registerPlugin(\Analogue\ORM\Plugins\SoftDeletes\SoftDeletesPlugin::class);
+
+            return $manager;
+        });
+
+        $this->app->bind(Manager::class, function ($app) {
+            return $app->make('analogue');
         });
     }
-    
+
     /**
      * Get the services provided by the provider.
      *
