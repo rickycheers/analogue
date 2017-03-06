@@ -646,7 +646,9 @@ class Aggregate implements InternallyMappable
             }
 
             foreach ($valueObjectAttributes as $key=>$value) {
+
                 $valueObjectAttributes[$prefix.$key] = $value;
+
                 unset($valueObjectAttributes[$key]);
             }
 

@@ -1296,8 +1296,9 @@ class EntityMap
      * Maps the names of the column names to the appropriate attributes
      * of an entity if the $attributes property of an EntityMap is an
      * associative array.
-     * 
+     *
      * @param array $array
+     *
      * @return array
      */
     public function getAttributeNamesFromColumns($array)
@@ -1319,9 +1320,10 @@ class EntityMap
     }
 
     /**
-     * Gets the entity attribute name of a given column in a table
-     * 
+     * Gets the entity attribute name of a given column in a table.
+     *
      * @param string $column_name
+     *
      * @return string
      */
     public function getAttributeNameForColumn($column_name)
@@ -1338,9 +1340,10 @@ class EntityMap
     }
 
     /**
-     * Gets the column name of a given entity attribute
-     * 
+     * Gets the column name of a given entity attribute.
+     *
      * @param string $column_name
+     *
      * @return string
      */
     public function getColumnNameForAttribute($attribute_name)
@@ -1361,8 +1364,9 @@ class EntityMap
      * Maps the attribute names of an entity to the appropriate
      * column names in the database if the $attributes property of
      * an EntityMap is an associative array.
-     * 
+     *
      * @param array $array
+     *
      * @return array
      */
     public function getColumnNamesFromAttributes($array)

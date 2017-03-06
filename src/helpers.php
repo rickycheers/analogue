@@ -32,13 +32,13 @@ if (!function_exists('mapper')) {
     }
 }
 
-
-if (! function_exists('is_asociative_array')) {
+if (!function_exists('is_asociative_array')) {
 
     /**
-     * Checks if an array is an asociative array
-     * 
+     * Checks if an array is an asociative array.
+     *
      * @param array $array
+     *
      * @return bool
      */
     function is_asociative_array(array $array)
