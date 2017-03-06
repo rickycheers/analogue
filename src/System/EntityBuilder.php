@@ -157,14 +157,24 @@ class EntityBuilder
 
         $valueObject = $this->mapper->getManager()->getValueObjectInstance($valueClass);
 
-        foreach ($embeddedAttributes as $key) {
-            $prefix = snake_case(class_basename($valueClass)).'_';
+        foreach ($embeddedAttributes as $column => $attribute) {
+
+            // Check if custom property names were not defined (columnName => propertyName)
+            if(is_numeric($column)){
+                $column = $attribute;
+            }
+
+            $prefix = '';
+
+            if ($map->usePrefixes()){
+                $prefix = snake_case(class_basename($valueClass)).'_';
+            }
 
             $voWrapper = $this->factory->make($valueObject);
 
-            $voWrapper->setEntityAttribute($key, $attributes[$prefix.$key]);
+            $voWrapper->setEntityAttribute($attribute, $attributes[$prefix.$column]);
 
-            unset($attributes[$prefix.$key]);
+            unset($attributes[$prefix.$column]);
         }
 
         $attributes[$localKey] = $valueObject;

@@ -1137,7 +1137,9 @@ class EntityMap
     {
         $collection = new EntityCollection($entities, $this);
 
-        return $collection->keyBy($this->getKeyName());
+        $keyName = $this->getAttributeNameForColumn($this->getKeyName());
+
+        return $collection->keyBy($keyName);
     }
 
     /**
@@ -1302,18 +1304,12 @@ class EntityMap
     {
         $attributes = $this->getAttributes();
 
-        $keyName = $this->getKeyName();
-
         if (is_asociative_array($attributes)) {
             $newArray = [];
 
             foreach ($array as $key => $value) {
                 $attributeName = isset($attributes[$key]) ? $attributes[$key] : $key;
                 $newArray[$attributeName] = $value;
-
-                // if ($keyName == $key) {
-                //     $this->setKeyName($attributeName);
-                // }
             }
 
             return $newArray;

@@ -343,7 +343,7 @@ class Aggregate implements InternallyMappable
      */
     public function getEntityId()
     {
-        $keyName = $this->entityMap->getAttributeNameForColumn($this->entityMap->getKeyName());
+        $keyName = $this->entityMap->getKeyName();
         return $this->wrappedEntity->getEntityAttribute($keyName);
     }
 
@@ -577,9 +577,11 @@ class Aggregate implements InternallyMappable
 
         $attributes = $this->flattenEmbeddables($attributes);
 
+        $attributes = $this->entityMap->getColumnNamesFromAttributes($attributes);
+
         $foreignKeys = $this->getForeignKeyAttributes();
 
-        return $this->entityMap->getColumnNamesFromAttributes($attributes + $foreignKeys);
+        return ($attributes + $foreignKeys);
     }
 
     /**
@@ -633,12 +635,18 @@ class Aggregate implements InternallyMappable
             // TODO Make wrapper object compatible with value objects
             $valueObjectAttributes = $valueObject->getEntityAttributes();
 
-            // Now (if setup in the entity map) we prefix the value object's
-            // attributes with the snake_case name of the embedded class.
-            $prefix = snake_case(class_basename($embed));
+            $voMap = $this->mapper->getManager()->getValueMap($embed);
+
+            $prefix = '';
+
+            if ($voMap->usePrefixes()){
+                // Now (if setup in the entity map) we prefix the value object's
+                // attributes with the snake_case name of the embedded class.
+                $prefix = snake_case(class_basename($embed)).'_';
+            }
 
             foreach ($valueObjectAttributes as $key=>$value) {
-                $valueObjectAttributes[$prefix.'_'.$key] = $value;
+                $valueObjectAttributes[$prefix.$key] = $value;
                 unset($valueObjectAttributes[$key]);
             }
 

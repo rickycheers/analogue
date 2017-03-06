@@ -172,6 +172,8 @@ class PlainObjectWrapper extends Wrapper
      */
     public function setEntityAttribute($key, $value)
     {
+        $key = $this->entityMap->getAttributeNameForColumn($key);
+
         if (!$this->reflection->hasProperty($key)) {
             $this->virtualAttributes[$key] = $value;
 
@@ -201,6 +203,8 @@ class PlainObjectWrapper extends Wrapper
      */
     public function getEntityAttribute($key)
     {
+        $key = $this->entityMap->getAttributeNameForColumn($key);
+
         if (!$this->reflection->hasProperty($key)) {
             return $this->getVirtualAttribute($key);
         }
@@ -208,7 +212,7 @@ class PlainObjectWrapper extends Wrapper
         $property = $this->getMappedProperty($key);
 
         if ($property->isPublic()) {
-            $value = $this->entity->$key;
+            $value = $this->entity->{$property->getName()};
         } else {
             $property->setAccessible(true);
             $value = $property->getValue($this->entity);

@@ -25,6 +25,11 @@ class ValueMap
     protected $attributes = [];
 
     /**
+     * @var boolean
+     */
+    protected $disablePrefixes = false;
+
+    /**
      * @return array
      */
     public function getAttributes()
@@ -66,5 +71,10 @@ class ValueMap
         } else {
             return class_basename($this);
         }
+    }
+
+    public function usePrefixes()
+    {
+        return $this->disablePrefixes ? false : true;
     }
 }
