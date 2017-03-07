@@ -575,9 +575,9 @@ class Aggregate implements InternallyMappable
             $attributes = $this->addDiscriminatorColumn($attributes);
         }
 
-        $attributes = $this->flattenEmbeddables($attributes);
-
         $attributes = $this->entityMap->getColumnNamesFromAttributes($attributes);
+
+        $attributes = $this->flattenEmbeddables($attributes);
 
         $foreignKeys = $this->getForeignKeyAttributes();
 
@@ -637,17 +637,19 @@ class Aggregate implements InternallyMappable
 
             $voMap = $this->mapper->getManager()->getValueMap($embed);
 
+            $valueObjectAttributes = $voMap->getColumnNamesFromAttributes($valueObjectAttributes);
+
             $prefix = '';
 
             if ($voMap->usePrefixes()){
                 // Now (if setup in the entity map) we prefix the value object's
                 // attributes with the snake_case name of the embedded class.
                 $prefix = snake_case(class_basename($embed)).'_';
-            }
 
-            foreach ($valueObjectAttributes as $key=>$value) {
-                $valueObjectAttributes[$prefix.$key] = $value;
-                unset($valueObjectAttributes[$key]);
+                foreach ($valueObjectAttributes as $key=>$value) {
+                    $valueObjectAttributes[$prefix.$key] = $value;
+                    unset($valueObjectAttributes[$key]);
+                }
             }
 
             $attributes = array_merge($attributes, $valueObjectAttributes);
