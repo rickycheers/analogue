@@ -106,7 +106,6 @@ class PlainObjectWrapper extends Wrapper
      */
     protected function getMappedProperty($name)
     {
-        $name = $this->entityMap->getAttributeNameForColumn($name);
         return $this->reflection->getProperty($name);
     }
 
