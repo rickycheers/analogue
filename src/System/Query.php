@@ -784,7 +784,9 @@ class Query
         // As we need the primary key to feed the
         // entity cache, we need it loaded on each
         // request
-        $columns = $this->enforceIdColumn($columns);
+        if($columns !== ['*']){
+            $columns = $this->enforceIdColumn($columns);
+        }
 
         // Run the query
         $results = $this->query->get($columns)->toArray();
