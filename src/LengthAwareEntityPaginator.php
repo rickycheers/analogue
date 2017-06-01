@@ -14,17 +14,10 @@ class LengthAwareEntityPaginator extends LengthAwarePaginator
      * @param null $currentPage
      * @param array $options
      */
-    public function __construct($items, $perPage, $currentPage = null, array $options = [])
+    public function __construct($items, $total, $perPage, $currentPage = null, array $options = [])
     {
-        foreach ($options as $key => $value) {
-            $this->{$key} = $value;
-        }
+        $items = $items instanceof EntityCollection ? $items : EntityCollection::make($items);
 
-        $this->perPage = $perPage;
-        $this->currentPage = $this->setCurrentPage($currentPage);
-        $this->path = $this->path != '/' ? rtrim($this->path, '/') : $this->path;
-        $this->items = $items instanceof EntityCollection ? $items : EntityCollection::make($items);
-
-        $this->checkForMorePages();
+        parent::__construct($items, $total, $perPage, $currentPage, $options);
     }
 }
