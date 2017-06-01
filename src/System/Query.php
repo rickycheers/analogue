@@ -5,11 +5,11 @@ namespace Analogue\ORM\System;
 use Analogue\ORM\Drivers\DBAdapter;
 use Analogue\ORM\EntityCollection;
 use Analogue\ORM\Exceptions\EntityNotFoundException;
+use Analogue\ORM\LengthAwareEntityPaginator;
 use Analogue\ORM\Relationships\Relationship;
 use Closure;
 use Exception;
 use Illuminate\Database\Query\Expression;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 
 /**
@@ -284,7 +284,7 @@ class Query
      * @param int   $perPage
      * @param array $columns
      *
-     * @return LengthAwarePaginator
+     * @return LengthAwareEntityPaginator
      */
     public function paginate($perPage = null, $columns = ['*'])
     {
@@ -295,7 +295,7 @@ class Query
             $perPage = $perPage ?: $this->entityMap->getPerPage()
         );
 
-        return new LengthAwarePaginator($this->get($columns)->all(), $total, $perPage, $page, [
+        return new LengthAwareEntityPaginator($this->get($columns)->all(), $total, $perPage, $page, [
             'path' => Paginator::resolveCurrentPath(),
         ]);
     }
