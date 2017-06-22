@@ -75,6 +75,8 @@ class CollectionProxy extends Proxy implements ArrayAccess, Arrayable, Countable
      */
     public function getUnderlyingCollection()
     {
+        $this->loadOnce();
+
         return $this->loadedCollection;
     }
 
@@ -115,8 +117,6 @@ class CollectionProxy extends Proxy implements ArrayAccess, Arrayable, Countable
      */
     public function count()
     {
-        $this->loadOnce();
-
         return $this->getUnderlyingCollection()->count();
     }
 
@@ -129,8 +129,6 @@ class CollectionProxy extends Proxy implements ArrayAccess, Arrayable, Countable
      */
     public function offsetExists($key)
     {
-        $this->loadOnce();
-
         return $this->getUnderlyingCollection()->offsetExists($key);
     }
 
@@ -143,8 +141,6 @@ class CollectionProxy extends Proxy implements ArrayAccess, Arrayable, Countable
      */
     public function offsetGet($key)
     {
-        $this->loadOnce();
-
         return $this->getUnderlyingCollection()->offsetGet($key);
     }
 
@@ -156,8 +152,6 @@ class CollectionProxy extends Proxy implements ArrayAccess, Arrayable, Countable
      */
     public function offsetSet($key, $value)
     {
-        $this->loadOnce();
-
         $this->getUnderlyingCollection()->offsetSet($key, $value);
     }
 
@@ -168,8 +162,6 @@ class CollectionProxy extends Proxy implements ArrayAccess, Arrayable, Countable
      */
     public function offsetUnset($key)
     {
-        $this->loadOnce();
-
         $this->getUnderlyingCollection()->offsetUnset($key);
     }
 
@@ -180,8 +172,6 @@ class CollectionProxy extends Proxy implements ArrayAccess, Arrayable, Countable
      */
     public function toArray()
     {
-        $this->loadOnce();
-
         return $this->getUnderlyingCollection()->toArray();
     }
 
@@ -192,8 +182,6 @@ class CollectionProxy extends Proxy implements ArrayAccess, Arrayable, Countable
      */
     public function jsonSerialize()
     {
-        $this->loadOnce();
-
         return $this->getUnderlyingCollection()->jsonSerialize();
     }
 
@@ -206,8 +194,6 @@ class CollectionProxy extends Proxy implements ArrayAccess, Arrayable, Countable
      */
     public function toJson($options = 0)
     {
-        $this->loadOnce();
-
         return $this->getUnderlyingCollection()->toJson();
     }
 
@@ -218,8 +204,6 @@ class CollectionProxy extends Proxy implements ArrayAccess, Arrayable, Countable
      */
     public function getIterator()
     {
-        $this->loadOnce();
-
         return $this->getUnderlyingCollection()->getIterator();
     }
 
