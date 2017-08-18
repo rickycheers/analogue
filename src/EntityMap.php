@@ -1289,7 +1289,7 @@ class EntityMap
         // Add $this to parameters so the closure can call relationship method on the map.
         $parameters[] = $this;
 
-        return  call_user_func_array([$this->dynamicRelationships[$method], $parameters]);
+        return  call_user_func_array($this->dynamicRelationships[$method], $parameters);
     }
 
     /**
