@@ -1180,7 +1180,7 @@ class EntityMap
      */
     public function boot()
     {
-        if (count($this->relationships > 0)) {
+        if (count($this->relationships) > 0) {
             $this->sortRelationshipsByType();
         }
     }
@@ -1247,7 +1247,11 @@ class EntityMap
         foreach ($this->relationships as $relation) {
             $relationObject = $this->$relation($entity);
 
-            $class = class_basename(get_class($relationObject));
+            $class = null;
+
+            if ($relationObject !== null) {
+                $class = class_basename(get_class($relationObject));
+            }
 
             if (in_array($class, static::$singleClasses)) {
                 $this->singleRelations[] = $relation;
